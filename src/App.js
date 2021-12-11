@@ -1,4 +1,6 @@
 import React from 'react';
+import Memetronome from './instruments/memetronome';
+
 export default function App() {
-  return <div>Q</div>;
+  return <Memetronome />;
 }
