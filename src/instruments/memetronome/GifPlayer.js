@@ -1,91 +1,56 @@
-import React, { useEffect, useRef } from 'react';
-import { useState } from 'react/cjs/react.development';
-import { getGifFrames, drawOnOffScreenCanvas } from './utils';
+/** @jsx jsx */
+import { jsx, css } from '@emotion/react';
+import { useEffect, useRef } from 'react';
+import { useGifFrames, useDraw } from './hooks';
 
 const url = 'https://media.giphy.com/media/5zosFvohZrssDQyl0m/giphy.gif';
 
-
-function useGifFrames(url) {
-  const [frames, setFrames] = useState([]);
-  const [isLoading, setLoading] = useState(false);
-  
-  useEffect(() => {
-    (async () => {
-      setLoading(true);
-      const frames = await getGifFrames(url);
-      setFrames(frames);
-      setLoading(false);
-    })();
-  }, [url]);
-  
-  return { isLoading, frames };
-}
-
-function useDraw(ctx, frames) {
-  useEffect(() => {
-    let animationId;
-    let index = 0;
-    let frameImageData;
-    const tempCanvas = document.createElement('canvas');
-    const tempCtx = tempCanvas.getContext('2d');
-    
-    function renderFrame(i) {
-      const frame = frames[i];
-      
-      if (frame.disposalType ===  2) {
-        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-      }
-      
-      if (
-        !frameImageData ||
-        frame.dims.width != frameImageData.width ||
-        frame.dims.height != frameImageData.height
-      ) {
-        tempCanvas.width = frame.dims.width;
-        tempCanvas.height = frame.dims.height;
-        frameImageData = tempCtx.createImageData(frame.dims.width, frame.dims.height);
-      }
-
-      frameImageData.data.set(frame.patch);
-      tempCtx.putImageData(frameImageData, 0, 0);
-      ctx.drawImage(tempCanvas, frame.dims.left, frame.dims.top);
-    }
-
-    function draw() {
-      renderFrame(index);
-      index ++;
-      index %= frames.length;
-      setTimeout(() => {
-        animationId = requestAnimationFrame(draw);
-      }, 50);
-    }
-    
-    if(ctx && frames.length > 0) {
-      draw();
-    }
-    
-    return () => {
-      if(animationId) cancelAnimationFrame(animationId);
-    }
-  }, [frames]);
-}
+const classes = {
+  root: css`
+    position: relative;
+    width: 300px;
+    height: 300px;
+    border-radius: 50%;
+    overflow: hidden;
+  `,
+  canvas: css`
+    width: 100%;
+    height: 100%;
+  `,
+  loadingMask: css`
+    position: absolute;
+    z-index: 1;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #000;
+    color: #fff;
+  `,
+};
 
 export default function GifPlayer() {
   const canvasRef = useRef();
-  const { isLoading, frames} = useGifFrames(url);
+  const { isLoading, frames } = useGifFrames(url);
   const ctx = canvasRef?.current?.getContext('2d');
-  
+
   useEffect(() => {
-    if(frames.length > 0) {
+    if (frames.length > 0) {
       const canvas = canvasRef.current;
       canvas.width = frames[0].dims.width;
       canvas.height = frames[0].dims.height;
     }
   }, [frames]);
-  
+
   useDraw(ctx, frames);
-  
+
   return (
-    <canvas ref={canvasRef}/>
+    <div css={classes.root}>
+      <canvas ref={canvasRef} css={classes.canvas} />
+      {isLoading && <div css={classes.loadingMask}>Loading...</div>}
+    </div>
   );
 }
