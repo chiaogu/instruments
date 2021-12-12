@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
+import GifPlayer from './GifPlayer';
 import useMetronome from './useMetronome';
 
 export default function Memetronome() {
@@ -7,6 +8,7 @@ export default function Memetronome() {
   return (
     <div>
       <h2>Memetronome</h2>
+      <GifPlayer />
       <button
         onClick={toggle}
       >
