@@ -11,6 +11,8 @@ export default function useMetronome() {
       let isDownbeat = true;
       const synth = new Tone.MembraneSynth({ volume: 0 }).toDestination();
       synth.volume.value = -20;
+      Tone.Transport.setLoopPoints(0, '4n');
+      Tone.Transport.loop = true;
       eventId = Tone.Transport.scheduleRepeat(time => {
         if(isDownbeat) {
           synth.triggerAttackRelease('C3', '8n', time);
@@ -19,7 +21,10 @@ export default function useMetronome() {
       }, '8n');
       Tone.Transport.start();
     }
-    return () => Tone.Transport.clear(eventId);
+    return () => {
+      Tone.Transport.clear(eventId);
+      Tone.Transport.stop();
+    }
   }, [active]);
   
   async function toggle() {

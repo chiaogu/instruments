@@ -1,7 +1,8 @@
 /** @jsx jsx */
 import { jsx, css } from '@emotion/react';
-import { useEffect, useRef } from 'react';
-import { useGifFrames, useDraw } from './hooks';
+import { useState, useEffect, useRef } from 'react';
+import { useRenderer } from './useRenderer';
+import { getGifFrames } from './utils';
 
 const url = 'https://media.giphy.com/media/5zosFvohZrssDQyl0m/giphy.gif';
 
@@ -32,10 +33,25 @@ const classes = {
   `,
 };
 
+function useGifFrames(url) {
+  const [frames, setFrames] = useState([]);
+  const [isLoading, setLoading] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      setLoading(true);
+      const frames = await getGifFrames(url);
+      setFrames(frames);
+      setLoading(false);
+    })();
+  }, [url]);
+
+  return { isLoading, frames };
+}
+
 export default function GifPlayer() {
   const canvasRef = useRef();
   const { isLoading, frames } = useGifFrames(url);
-  const ctx = canvasRef?.current?.getContext('2d');
 
   useEffect(() => {
     if (frames.length > 0) {
@@ -45,7 +61,7 @@ export default function GifPlayer() {
     }
   }, [frames]);
 
-  useDraw(ctx, frames);
+  useRenderer(canvasRef, frames);
 
   return (
     <div css={classes.root}>

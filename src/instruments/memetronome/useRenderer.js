@@ -1,36 +1,27 @@
-import { useState, useEffect } from 'react';
-import { getGifFrames } from './utils';
+import { useEffect } from 'react';
+import * as Tone from 'tone';
 
-export function useGifFrames(url) {
-  const [frames, setFrames] = useState([]);
-  const [isLoading, setLoading] = useState(false);
+const meta = {
+  offset: 13,
+  beats: 2,
+};
 
-  useEffect(() => {
-    (async () => {
-      setLoading(true);
-      const frames = await getGifFrames(url);
-      setFrames(frames);
-      setLoading(false);
-    })();
-  }, [url]);
-
-  return { isLoading, frames };
-}
-
-export function useDraw(ctx, frames) {
+export function useRenderer(canvasRef, frames) {
   useEffect(() => {
     let animationId;
-    let index = 0;
+    let index = meta.offset;
     let frameImageData;
+    let cancelled = false;
     const tempCanvas = document.createElement('canvas');
     const tempCtx = tempCanvas.getContext('2d');
+    const ctx = canvasRef?.current?.getContext('2d');
 
     function renderFrame(i) {
       const frame = frames[i];
-
-      if (frame.disposalType === 2) {
+      
+      // if (frame.disposalType === 2) {
         ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-      }
+      // }
 
       if (
         !frameImageData ||
@@ -48,22 +39,34 @@ export function useDraw(ctx, frames) {
       frameImageData.data.set(frame.patch);
       tempCtx.putImageData(frameImageData, 0, 0);
       ctx.drawImage(tempCanvas, frame.dims.left, frame.dims.top);
+      
+      ctx.beginPath();
+      ctx.rect(0, ctx.canvas.height / 2, ctx.canvas.width * Tone.Transport.progress, 10);
+      ctx.fillStyle = '#f00';
+      ctx.fill();
     }
 
     function draw() {
       renderFrame(index);
       index++;
       index %= frames.length;
-      setTimeout(() => {
+      if (!cancelled) {
         animationId = requestAnimationFrame(draw);
-      }, 50);
+      }
     }
 
     if (ctx && frames.length > 0) {
+      ctx.canvas.width = frames[0].dims.width;
+      ctx.canvas.height = frames[0].dims.height;
+      
+      for(let i = 0; i < meta.offset; i++) {
+        renderFrame(i);
+      }
       draw();
     }
 
     return () => {
+      cancelled = true;
       if (animationId) cancelAnimationFrame(animationId);
     };
   }, [frames]);
