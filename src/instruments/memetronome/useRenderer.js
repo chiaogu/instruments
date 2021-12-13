@@ -6,12 +6,30 @@ const meta = {
   beats: 2,
 };
 
+function trackProgress(beats) {
+  let progress = Tone.Transport.progress;
+  let loopCount = 0;
+  return {
+    updateProgress() {
+      if(Tone.Transport.progress < progress) {
+        loopCount++;
+        loopCount %= beats
+      }
+      progress = Tone.Transport.progress;
+    },
+    getProgress() {
+      return (loopCount + Tone.Transport.progress) / beats;
+    }
+  }
+}
+
 export function useRenderer(canvasRef, frames) {
   useEffect(() => {
     let animationId;
-    let index = meta.offset;
     let frameImageData;
     let cancelled = false;
+    let frameIndex = meta.offset;
+    const { updateProgress, getProgress } = trackProgress(meta.beats);
     const tempCanvas = document.createElement('canvas');
     const tempCtx = tempCanvas.getContext('2d');
     const ctx = canvasRef?.current?.getContext('2d');
@@ -19,9 +37,9 @@ export function useRenderer(canvasRef, frames) {
     function renderFrame(i) {
       const frame = frames[i];
       
-      // if (frame.disposalType === 2) {
+      if (frame.disposalType === 2) {
         ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-      // }
+      }
 
       if (
         !frameImageData ||
@@ -40,16 +58,21 @@ export function useRenderer(canvasRef, frames) {
       tempCtx.putImageData(frameImageData, 0, 0);
       ctx.drawImage(tempCanvas, frame.dims.left, frame.dims.top);
       
-      ctx.beginPath();
-      ctx.rect(0, ctx.canvas.height / 2, ctx.canvas.width * Tone.Transport.progress, 10);
-      ctx.fillStyle = '#f00';
-      ctx.fill();
+      // ctx.beginPath();
+      // ctx.rect(0, ctx.canvas.height / 2, ctx.canvas.width * Tone.Transport.progress, 10);
+      // ctx.fillStyle = '#f00';
+      // ctx.fill();
     }
-
+    
     function draw() {
-      renderFrame(index);
-      index++;
-      index %= frames.length;
+      updateProgress();
+
+      const index = (Math.round(getProgress() * frames.length) + meta.offset) % frames.length;
+      if(index !== frameIndex) {
+        renderFrame(index);
+        frameIndex = index;
+      }
+
       if (!cancelled) {
         animationId = requestAnimationFrame(draw);
       }
