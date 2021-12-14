@@ -1,0 +1,23 @@
+[
+  {
+    "url": "https://media.giphy.com/media/l2JhL1AzTxORUTDlC/giphy-downsized-large.gif",
+    "offset": 3,
+    "beats": 16
+  },
+  {
+    "url": "https://media.giphy.com/media/PPy2wTXW9BJok/giphy.gif",
+    "offset": 0,
+    "beats": 1
+  },
+  {
+    "url": "https://media.giphy.com/media/5zosFvohZrssDQyl0m/giphy.gif",
+    "offset": 13,
+    "beats": 2
+  },
+  {
+    "url": "https://media.giphy.com/media/1GrsfWBDiTN60/giphy.gif",
+    "offset": 2,
+    "beats": 1,
+    "left": -20
+  }
+]

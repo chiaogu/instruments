@@ -16,7 +16,7 @@ import {
   }); 
   
   chokidar
-    .watch(`${SRC_PATH}/**/*.js`, { ignoreInitial: true })
+    .watch(`${SRC_PATH}/**/*`, { ignoreInitial: true })
     .on('all', rebuild);
     
   server.start({ root: 'dist' });

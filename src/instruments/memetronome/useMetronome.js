@@ -37,6 +37,10 @@ export default function useMetronome() {
     Tone.Transport.bpm.setValueAtTime(value, Tone.now());
   }
   
+  useEffect(() => {
+    setBpm(40);
+  }, []);
+  
   return {
     toggle,
     active,

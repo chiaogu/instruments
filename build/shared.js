@@ -1,5 +1,6 @@
 /* eslint-env node */
-import { promises as fs } from 'fs';
+// import { promises as fs } from 'fs';
+import fs from 'fs-extra';
 import path from 'path';
 
 const __dirname = path.dirname(new URL(import.meta.url).pathname);
@@ -23,8 +24,8 @@ export const buildOptions = {
 export async function prebuild() {
   await fs.rmdir(DIST_PATH, { recursive: true });
   await fs.mkdir(DIST_PATH);
-  await fs.copyFile(
-    path.join(SRC_PATH, 'index.html'),
-    path.join(DIST_PATH, 'index.html')
+  await fs.copy(
+    path.join(__dirname, '..', 'public'),
+    path.join(DIST_PATH)
   );
 }

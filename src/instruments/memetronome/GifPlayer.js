@@ -4,8 +4,6 @@ import { useState, useEffect, useRef } from 'react';
 import { useRenderer } from './useRenderer';
 import { getGifFrames } from './utils';
 
-const url = 'https://media.giphy.com/media/5zosFvohZrssDQyl0m/giphy.gif';
-
 const classes = {
   root: css`
     position: relative;
@@ -49,19 +47,11 @@ function useGifFrames(url) {
   return { isLoading, frames };
 }
 
-export default function GifPlayer() {
+export default function GifPlayer({ gif }) {
   const canvasRef = useRef();
-  const { isLoading, frames } = useGifFrames(url);
+  const { isLoading, frames } = useGifFrames(gif.url);
 
-  useEffect(() => {
-    if (frames.length > 0) {
-      const canvas = canvasRef.current;
-      canvas.width = frames[0].dims.width;
-      canvas.height = frames[0].dims.height;
-    }
-  }, [frames]);
-
-  useRenderer(canvasRef, frames);
+  useRenderer(canvasRef, { frames, ...gif });
 
   return (
     <div css={classes.root}>
