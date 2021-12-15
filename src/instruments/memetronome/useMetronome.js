@@ -15,7 +15,7 @@ export default function useMetronome() {
       Tone.Transport.loop = true;
       eventId = Tone.Transport.scheduleRepeat(time => {
         if(isDownbeat) {
-          synth.triggerAttackRelease('C3', '8n', time);
+          synth.triggerAttackRelease('C4', '8n', time);
         }
         isDownbeat = !isDownbeat;
       }, '8n');
@@ -38,7 +38,7 @@ export default function useMetronome() {
   }
   
   useEffect(() => {
-    setBpm(40);
+    setBpm(110);
   }, []);
   
   return {
