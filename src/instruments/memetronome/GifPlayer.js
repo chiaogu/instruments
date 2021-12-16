@@ -1,6 +1,6 @@
 /** @jsx jsx */
 import { jsx, css } from '@emotion/react';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useRenderer } from './useRenderer';
 import { getGifFrames } from './utils';
 
@@ -31,27 +31,31 @@ const classes = {
   `,
 };
 
-function useGifFrames(url) {
-  const [frames, setFrames] = useState([]);
+function useGifFrames(gif) {
+  const [gifWithFrames, setGifWithFrames] = useState(gif);
   const [isLoading, setLoading] = useState(false);
 
   useEffect(() => {
     (async () => {
+      setGifWithFrames(gif);
       setLoading(true);
-      const frames = await getGifFrames(url);
-      setFrames(frames);
+      const frames = await getGifFrames(gif.url);
+      setGifWithFrames({
+        ...gif,
+        frames,
+      });
       setLoading(false);
     })();
-  }, [url]);
+  }, [gif]);
 
-  return { isLoading, frames };
+  return { isLoading, gifWithFrames };
 }
 
 export default function GifPlayer({ gif }) {
   const canvasRef = useRef();
-  const { isLoading, frames } = useGifFrames(gif.url);
-
-  useRenderer(canvasRef, { frames, ...gif });
+  const { isLoading, gifWithFrames } = useGifFrames(gif);
+  
+  useRenderer(canvasRef, gifWithFrames);
 
   return (
     <div css={classes.root}>
