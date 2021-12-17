@@ -50,14 +50,7 @@ export default function Memetronome() {
         <div css={classes.bpm}>{bpm}</div>
         <button onClick={toggle}>{active ? 'Stop' : 'Play'}</button>
       </div>
-      <Wheel css={classes.wheel}/>
-      {/* <input
-        type="range"
-        value={bpm}
-        min={40}
-        max={250}
-        onInput={({ target: { value } }) => setBpm(value)}
-      /> */}
+      <Wheel css={classes.wheel} onChange={(value) => setBpm(Math.round(40 + 210 * value))}/>
     </div>
   );
 }
