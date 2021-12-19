@@ -1,6 +1,7 @@
 /** @jsx jsx */
 import { jsx, css } from '@emotion/react';
 import { useState, useEffect } from 'react';
+import { createRotateHook } from '../../hooks/useRotate';
 
 const classes = {
   root: css`
@@ -28,76 +29,34 @@ const classes = {
   `,
 };
 
-function getAngle(p1, p2) {
-  const radians = Math.atan2(p2.y - p1.y, p2.x - p1.x);
-  return (radians * 180) / Math.PI + 180;
-}
+const TOGGLE_ANGLE = 5;
 
-function useTouch(defaultAngle) {
-  const [pressedState, setPressedState] = useState();
-  const [angle, setAngle] = useState(defaultAngle);
-
-  useEffect(() => {
-    let previous;
-    let totalDiff = 0;
-    
-    function onMove({ clientX: x, clientY: y }) {
-      const currentPointerAngle = getAngle(pressedState.center, { x, y });
-      if (previous !== undefined) {
-        let diff = (currentPointerAngle - previous + 360) % 360;
-        if (diff > 180) diff -= 360;
-        totalDiff += diff;
-        setAngle(Math.max(0, Math.min(360, pressedState.angle + totalDiff)));
-      }
-      previous = currentPointerAngle;
+const useRotate = createRotateHook({
+  calculateDiff({ diff, angle }) {
+    if (angle < TOGGLE_ANGLE || angle > 360 - TOGGLE_ANGLE) {
+      return diff / 20;
+    } else {
+      return diff;
     }
-
-    function onTouchMove({ touches }) {
-      onMove(touches[0]);
-    }
-
-    function onRelease() {
-      setPressedState();
-    }
-
-    if (pressedState) {
-      window.addEventListener('mousemove', onMove);
-      window.addEventListener('mouseup', onRelease);
-      window.addEventListener('touchmove', onTouchMove);
-      window.addEventListener('touchend', onRelease);
-    }
-
-    return () => {
-      window.removeEventListener('mousemove', onMove);
-      window.removeEventListener('mouseup', onRelease);
-      window.removeEventListener('touchmove', onTouchMove);
-      window.removeEventListener('touchend', onRelease);
-    };
-  }, [pressedState, setPressedState]);
-
-  return {
-    angle,
-    isPressed: !!pressedState,
-    onPress(event) {
-      event.preventDefault();
-      const { target, clientX, clientY } = event;
-      const { left, top, width, height } = target.getBoundingClientRect();
-      const x = left + width / 2;
-      const y = top + height / 2;
-      setPressedState({
-        angle,
-        center: { x, y },
-        pointer: { x: clientX, y: clientY },
-      });
-    },
-  };
-}
+  },
+  onAngleChange({ angle, setAngle, totalDiff, startAngle, setStartAngle }) {
+    console.log(angle);
+    // if (startAngle < TOGGLE_ANGLE && totalDiff > TOGGLE_ANGLE / 5) {
+    //   setAngle(TOGGLE_ANGLE);
+    //   setStartAngle(TOGGLE_ANGLE);
+    // } else {
+      setAngle(angle);
+    // }
+  },
+});
 
 export default function Wheel({ className, onChange }) {
-  const { angle, onPress } = useTouch(120);
-  
+  const [angle, setAngle] = useState(0);
+  const { onPress } = useRotate(angle, setAngle);
+
   useEffect(() => {
-    onChange(angle / 360);
+    // console.log(angle);
+    // onChange(angle / 360);
   }, [angle, onChange]);
 
   return (
