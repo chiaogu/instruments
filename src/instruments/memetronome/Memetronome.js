@@ -1,10 +1,11 @@
 /** @jsx jsx */
 import { jsx, css } from '@emotion/react';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import GifPlayer from './GifPlayer';
 import Wheel from './Wheel';
 import useMetronome from './useMetronome';
 import gifs from './gifs.json';
+import * as Tone from 'tone';
 
 const classes = {
   root: css`
@@ -38,9 +39,17 @@ const classes = {
 };
 
 export default function Memetronome() {
-  const { active, toggle, bpm, setBpm } = useMetronome();
+  const { bpm, setBpm, setActive } = useMetronome();
   const [gifIndex, setGifIndex] = useState(0);
   const onClickChange = () => setGifIndex((gifIndex + 1) % gifs.length);
+  const onWheelChange = useCallback((value) => {
+    setActive(value !== null);
+    if (value) {
+      setBpm(Math.round(40 + 210 * value));
+    } else {
+      setBpm(1);
+    }
+  }, [setBpm, setActive]);
 
   return (
     <div css={classes.root}>
@@ -48,12 +57,8 @@ export default function Memetronome() {
       <div css={classes.buttons}>
         <button onClick={onClickChange}>Change</button>
         <div css={classes.bpm}>{bpm}</div>
-        <button onClick={toggle}>{active ? 'Stop' : 'Play'}</button>
       </div>
-      <Wheel
-        css={classes.wheel}
-        onChange={(value) => setBpm(Math.round(40 + 210 * value))}
-      />
+      <Wheel css={classes.wheel} onChange={onWheelChange} onPress={Tone.start}/>
     </div>
   );
 }

@@ -29,7 +29,8 @@ const classes = {
   `,
 };
 
-const TOGGLE_ANGLE = 5;
+const TOGGLE_ANGLE = 20;
+const RESISTANCE = 5;
 
 const useRotate = createRotateHook({
   calculateDiff({ diff, angle }) {
@@ -39,32 +40,62 @@ const useRotate = createRotateHook({
       return diff;
     }
   },
-  onAngleChange({ angle, setAngle, totalDiff, startAngle, setStartAngle }) {
-    console.log(angle);
-    // if (startAngle < TOGGLE_ANGLE && totalDiff > TOGGLE_ANGLE / 5) {
-    //   setAngle(TOGGLE_ANGLE);
-    //   setStartAngle(TOGGLE_ANGLE);
-    // } else {
-      setAngle(angle);
-    // }
+  onAngleChange({ angle, setAngle, totalDiff }) {
+    if (totalDiff > 0) {
+      if (angle < TOGGLE_ANGLE && angle > TOGGLE_ANGLE / RESISTANCE) {
+        setAngle(TOGGLE_ANGLE, true);
+      } else if (angle > 360 - (TOGGLE_ANGLE / RESISTANCE) * (RESISTANCE - 1)) {
+        setAngle(0, true);
+      } else {
+        setAngle(angle);
+      }
+    } else {
+      if (angle < (TOGGLE_ANGLE / RESISTANCE) * (RESISTANCE - 1)) {
+        setAngle(0, true);
+      } else if (
+        angle < 360 - TOGGLE_ANGLE / RESISTANCE &&
+        angle > 360 - (TOGGLE_ANGLE / RESISTANCE) * (RESISTANCE - 1)
+      ) {
+        setAngle(360 - TOGGLE_ANGLE, true);
+      } else {
+        setAngle(angle);
+      }
+    }
+  },
+  onRelease({ angle, setAngle }) {
+    if (angle < TOGGLE_ANGLE / 2 || angle > 360 - TOGGLE_ANGLE / 2) {
+      setAngle(0, true);
+    } else if (angle >= TOGGLE_ANGLE / 2 && angle < TOGGLE_ANGLE) {
+      setAngle(TOGGLE_ANGLE, true);
+    } else if (angle > 360 - TOGGLE_ANGLE && angle < 360 - TOGGLE_ANGLE / 2) {
+      setAngle(360 - TOGGLE_ANGLE, true);
+    }
   },
 });
 
-export default function Wheel({ className, onChange }) {
+export default function Wheel({ className, onChange, onPress: onPressExternal }) {
   const [angle, setAngle] = useState(0);
   const { onPress } = useRotate(angle, setAngle);
 
   useEffect(() => {
-    // console.log(angle);
-    // onChange(angle / 360);
+    if (angle < TOGGLE_ANGLE / 2 || angle > 360 - TOGGLE_ANGLE / 2) {
+      onChange(null);
+    } else {
+      onChange((angle - TOGGLE_ANGLE) / (360 - TOGGLE_ANGLE * 2));
+    }
   }, [angle, onChange]);
+  
+  function handlePress(event) {
+    onPress(event);
+    onPressExternal(event);
+  }
 
   return (
     <div
       css={classes.root}
       className={className}
-      onMouseDown={onPress}
-      onTouchStart={onPress}
+      onMouseDown={handlePress}
+      onTouchStart={handlePress}
     >
       <div
         css={classes.wheel}
