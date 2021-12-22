@@ -44,7 +44,7 @@ export default function Memetronome() {
   const onClickChange = () => setGifIndex((gifIndex + 1) % gifs.length);
   const onWheelChange = useCallback((value) => {
     setActive(value !== null);
-    if (value) {
+    if (value !== null) {
       setBpm(Math.round(40 + 210 * value));
     } else {
       setBpm(1);

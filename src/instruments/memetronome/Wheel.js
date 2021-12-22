@@ -30,7 +30,8 @@ const classes = {
 };
 
 const TOGGLE_ANGLE = 20;
-const RESISTANCE = 5;
+const THROSHOLD_DIST = 5;
+const TURN_OFF_RESISTANCE = 0.8;
 
 const useRotate = createRotateHook({
   calculateDiff({ diff, angle }) {
@@ -42,19 +43,19 @@ const useRotate = createRotateHook({
   },
   onAngleChange({ angle, setAngle, totalDiff }) {
     if (totalDiff > 0) {
-      if (angle < TOGGLE_ANGLE && angle > TOGGLE_ANGLE / RESISTANCE) {
+      if (angle < TOGGLE_ANGLE && angle > TOGGLE_ANGLE / THROSHOLD_DIST) {
         setAngle(TOGGLE_ANGLE, true);
-      } else if (angle > 360 - (TOGGLE_ANGLE / RESISTANCE) * (RESISTANCE - 1)) {
+      } else if (angle > 360 - (TOGGLE_ANGLE / THROSHOLD_DIST) * (THROSHOLD_DIST - 1) * TURN_OFF_RESISTANCE) {
         setAngle(0, true);
       } else {
         setAngle(angle);
       }
     } else {
-      if (angle < (TOGGLE_ANGLE / RESISTANCE) * (RESISTANCE - 1)) {
+      if (angle < (TOGGLE_ANGLE / THROSHOLD_DIST) * (THROSHOLD_DIST - 1) * TURN_OFF_RESISTANCE) {
         setAngle(0, true);
       } else if (
-        angle < 360 - TOGGLE_ANGLE / RESISTANCE &&
-        angle > 360 - (TOGGLE_ANGLE / RESISTANCE) * (RESISTANCE - 1)
+        angle < 360 - TOGGLE_ANGLE / THROSHOLD_DIST &&
+        angle > 360 - (TOGGLE_ANGLE / THROSHOLD_DIST) * (THROSHOLD_DIST - 1)
       ) {
         setAngle(360 - TOGGLE_ANGLE, true);
       } else {
@@ -73,7 +74,11 @@ const useRotate = createRotateHook({
   },
 });
 
-export default function Wheel({ className, onChange, onPress: onPressExternal }) {
+export default function Wheel({
+  className,
+  onChange,
+  onPress: onPressExternal,
+}) {
   const [angle, setAngle] = useState(0);
   const { onPress } = useRotate(angle, setAngle);
 
@@ -84,7 +89,7 @@ export default function Wheel({ className, onChange, onPress: onPressExternal })
       onChange((angle - TOGGLE_ANGLE) / (360 - TOGGLE_ANGLE * 2));
     }
   }, [angle, onChange]);
-  
+
   function handlePress(event) {
     onPress(event);
     onPressExternal(event);

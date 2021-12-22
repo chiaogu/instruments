@@ -19,7 +19,7 @@ export default function useMetronome() {
       Tone.Transport.loop = true;
       eventId = Tone.Transport.scheduleRepeat((time) => {
         if (isDownbeat) {
-          // synth.triggerAttackRelease('C4', '8n', time);
+          synth.triggerAttackRelease('C4', '8n', time);
         }
         isDownbeat = !isDownbeat;
       }, '8n');

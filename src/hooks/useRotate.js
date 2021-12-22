@@ -44,6 +44,7 @@ export function createRotateHook({
 
           onAngleChange({
             angle: getCurrentAngle(),
+            diff,
             setAngle,
             totalDiff,
             startAngle,
